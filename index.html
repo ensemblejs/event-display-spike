@@ -13,14 +13,15 @@
 <script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="bower_components/c3/c3.min.js"></script>
 <script src="bower_components/moment/moment.js"></script>
+<script src="bower_components/lodash/lodash.min.js"></script>
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/aws-sdk/dist/aws-sdk.min.js"></script>
 <script>
   var chartMetadata = {
       bindto: '#chart',
       data: {
-        x: 'intervals',
-        xFormat: '%Y-%m-%dT%H:%M:%S',
+        x: 'interval',
+        xFormat: '%Y-%m-%dT%H:%M:%S.%fZ',
         columns: [],
         types: {
           average: 'area-spline',
@@ -32,7 +33,7 @@
           type: 'timeseries',
           tick: {
             format: function(date) {
-              return moment(date).format('ddd, hA');
+              return moment(date).format('MMM Do YY, HH:mm:ss');
             }
           },
           label: {
@@ -70,7 +71,9 @@
 
     chart.load({
       columns:[
-        addRow('intervals', json.intervals),
+        addRow('interval', _.map(json.interval, function (i) {
+          return moment(i);
+        })),
         addRow('average', json.average),
         addRow('count', json.count)
       ]
