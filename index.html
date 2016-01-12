@@ -6,21 +6,62 @@
   <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-  Events
+
   <div id="chart"></div>
 
 </body>
 <script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="bower_components/c3/c3.min.js"></script>
+<script src="bower_components/moment/moment.js"></script>
 <script>
-  var chart = c3.generate({
+  var data = {
+    'intervals': ['2016-01-12T11:00:00', '2016-01-12T12:00:00', '2016-01-12T13:00:00', '2016-01-12T14:00:00'],
+    'count': [3,4,5,1],
+    'average': [7.2833240032196045, 0.24539899826049805, 2.4509479999542236, 0.31312400102615356],
+    from: "2016-01-12T00:33:50.580Z"
+  };
+
+
+  var chartMetadata = {
       bindto: '#chart',
       data: {
-        columns: [
-          ['data1', 30, 200, 100, 400, 150, 250],
-          ['data2', 50, 20, 10, 40, 15, 25]
-        ]
+        x: 'intervals',
+        xFormat: '%Y-%m-%dT%H:%M:%S',
+        columns: [],
+        types: {
+          average: 'area-spline',
+          count: 'area'
+        }
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          tick: {
+            format: function(date) {
+              return moment(date).format('ddd, hA');
+            }
+          },
+          label: {
+            text: 'Time (hours)',
+            position: 'outer-center'
+          }
+        },
+        y: {
+          label: {
+            text: 'Duration (ms)',
+            position: 'outer-middle'
+          }
+        }
       }
-  });
+  };
+
+  chartMetadata.data.columns.push(['intervals']);
+  chartMetadata.data.columns.push(['average']);
+  chartMetadata.data.columns.push(['count']);
+  chartMetadata.data.columns[0] = chartMetadata.data.columns[0].concat(data.intervals);
+  chartMetadata.data.columns[1] = chartMetadata.data.columns[1].concat(data.average);
+  chartMetadata.data.columns[2] = chartMetadata.data.columns[2].concat(data.count);
+
+  var chart = c3.generate(chartMetadata);
 </script>
 </html>
