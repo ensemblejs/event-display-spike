@@ -5,11 +5,7 @@
   <title></title>
   <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
 </head>
-<body>
-
-  <div id="chart"></div>
-
-</body>
+<body><div id="chart"></div></body>
 <script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="bower_components/c3/c3.min.js"></script>
 <script src="bower_components/moment/moment.js"></script>
@@ -20,24 +16,13 @@
   var chartMetadata = {
       bindto: '#chart',
       data: {
-        x: 'interval',
-        xFormat: '%Y-%m-%dT%H:%M:%S.%fZ',
         columns: [],
-        types: {
-          average: 'area-spline',
-          count: 'area'
-        }
+        type: 'bar'
       },
       axis: {
         x: {
-          type: 'timeseries',
-          tick: {
-            format: function(date) {
-              return moment(date).format('MMM Do YY, HH:mm:ss');
-            }
-          },
           label: {
-            text: 'Time (hours)',
+            text: 'runs',
             position: 'outer-center'
           }
         },
@@ -55,11 +40,11 @@
     return [label].concat(values);
   }
 
-  AWS.config.update({accessKeyId: 'key', secretAccessKey: 'secret'});
+  AWS.config.update({accessKeyId: 'AKIAJ6IKNCRHJQIM4DCQ', secretAccessKey: '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'});
 
   new AWS.S3().getObject({
     Bucket: 'ensemblejs-events',
-    Key:'agg/event-save-duration.json'
+    Key:'agg/distributedlife+pong-profile-client-physics.json'
   })
   .send(function(error, data) {
     if (error) {
@@ -67,17 +52,15 @@
       return;
     }
 
-   var json = JSON.parse(data.Body);
+    var json = JSON.parse(data.Body);
 
-    chart.load({
-      columns:[
-        addRow('interval', _.map(json.interval, function (i) {
-          return moment(i);
-        })),
-        addRow('average', json.average),
-        addRow('count', json.count)
-      ]
+    _.each(_.keys(json), function (key) {
+      chart.load({
+        columns: [
+          [key].concat(json[key])
+        ]
+      });
     });
-  });
+  })
 </script>
 </html>

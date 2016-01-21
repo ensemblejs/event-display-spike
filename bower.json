@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "homepage": "https://github.com/ensemblejs/event-display-spike",
   "authors": [
-    "Pamela Rucinque <prucinqu@thoughtworks.com>"
+    "Pamela Rucinque <prucinqu@thoughtworks.com>",
+    "Ryan Boucher <ryan.boucher@distributedlife.com>"
   ],
   "license": "MIT",
   "ignore": [

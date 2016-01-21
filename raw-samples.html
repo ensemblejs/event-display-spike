@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+  <div id="chart"></div>
+
+</body>
+<script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
+<script src="bower_components/c3/c3.min.js"></script>
+<script src="bower_components/moment/moment.js"></script>
+<script src="bower_components/lodash/lodash.min.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/aws-sdk/dist/aws-sdk.min.js"></script>
+<script>
+  var chartMetadata = {
+      bindto: '#chart',
+      data: {
+        columns: [],
+        type: 'bar'
+      },
+      axis: {
+        x: {
+          label: {
+            text: 'Cycle',
+            position: 'outer-center'
+          }
+        },
+        y: {
+          label: {
+            text: 'Duration (ms)',
+            position: 'outer-middle'
+          }
+        }
+      }
+  };
+  var chart = c3.generate(chartMetadata);
+
+  function addRow (label, values) {
+    return [label].concat(values);
+  }
+
+  function success (data) {
+      chart.load({ columns: [addRow('samples', data[0].raw)] });
+  }
+
+  var base = 'http://localhost:8080/distributedlife+pong/profile/latest';
+  var search = window.location.search;
+
+  $.ajax(base + search, {
+    success: success
+  })
+</script>
+</html>
