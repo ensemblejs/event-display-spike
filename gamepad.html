@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,user-scalable=no"/>
+  <style type="text/css">
+    html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background-color:transparent}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{font-size:2em;margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type=checkbox],input[type=radio]{box-sizing:border-box;padding:0}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}input[type=search]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}
+
+    body {
+      background-color: white;
+      color: #fff;
+      margin: 0;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .content {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      margin: 0 auto;
+      min-height: 100vh;
+      text-align: center;
+      width: 100%;
+    }
+
+    .overlay {
+      height: 100%;
+      left: 0;
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
+
+    .stick {
+      border-radius: 50%;
+      width: 125px;
+      height: 125px;
+      background-color: white;
+      border: 1px dotted black;
+
+      margin: 25px;
+    }
+
+    .buttons {
+      margin: 25px;
+
+      width: 128px;
+      height: 128px;
+      display: flex;
+      flex-flow: row wrap;
+    }
+
+    .gamepad-button {
+      flex: 0 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      border: 1px solid black;
+
+      font-size: 2rem;
+
+      margin: 0;
+      padding: 0;
+    }
+
+    .base-face-0 { color: lightgreen; background-color: darkgreen; }
+    .base-face-1 { color: lightblue; background-color: darkblue; }
+    .base-face-2 { color: pink; background-color: darkred; }
+    .base-face-3 { color: gold; background-color: darkorange; }
+    .base-face-4 { color: orchid; background-color: darkorchid; }
+    .base-face-5 { color: dodgerblue; background-color: skyblue; }
+
+    .inverse-face-0 { background-color: lightgreen; color: darkgreen; }
+    .inverse-face-1 { background-color: lightblue; color: darkblue; }
+    .inverse-face-2 { background-color: pink; color: darkred; }
+    .inverse-face-3 { background-color: gold; color: darkorange; }
+    .inverse-face-4 { background-color: orchid; color: darkorchid; }
+    .inverse-face-5 { background-color: dodgerblue; color: skyblue; }
+
+    .base-up {
+      color: dodgerblue;
+      background-color: skyblue;
+      -webkit-transform: rotate(0deg);
+    }
+    .base-down {
+      color: dodgerblue;
+      background-color: skyblue;
+      -webkit-transform: rotate(90deg);
+    }
+    .base-left {
+      color: dodgerblue;
+      background-color: skyblue;
+      -webkit-transform: rotate(180deg);
+    }
+    .base-right {
+      color: dodgerblue;
+      background-color: skyblue;
+      -webkit-transform: rotate(270deg);
+    }
+
+    .inverse-up {
+      color: darkgreen;
+      background-color: lightgreen;
+      -webkit-transform: rotate(0deg);
+    }
+    .inverse-down {
+      color: darkblue;
+      background-color: lightblue;
+      -webkit-transform: rotate(90deg);
+    }
+    .inverse-left {
+      color: darkred;
+      background-color: pink;
+      -webkit-transform: rotate(180deg);
+    }
+    .inverse-right {
+      color: darkorange;
+      background-color: gold;
+      -webkit-transform: rotate(270deg);
+    }
+  </style>
+</head>
+<body>
+  <div class="content overlay">
+    <div id="left-stick" class="stick omnidirectional"></div>
+    <div id="8-way" class="stick w8-way"></div>
+    <div id="4-way" class="stick w4-way"></div>
+    <div id="2-way-v" class="stick w2-way-vertical"></div>
+    <div id="2-way-h" class="stick w2-way-horizontal"></div>
+    <div class="buttons">
+      <div id="face-0" class="gamepad-button base-face-0">N</div>
+      <div id="face-1" class="gamepad-button base-face-1">S</div>
+      <div id="face-2" class="gamepad-button base-face-2">E</div>
+      <div id="face-3" class="gamepad-button base-face-3">M</div>
+      <div id="face-4" class="gamepad-button base-face-4">B</div>
+      <div id="face-5" class="gamepad-button base-face-5">L</div>
+
+      <div id="up" class="gamepad-button base-up">►</div>
+      <div id="down" class="gamepad-button base-down">►</div>
+      <div id="left" class="gamepad-button base-left">►</div>
+      <div id="right" class="gamepad-button base-right">►</div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.1.0/lodash.min.js"></script>
+  <script type="text/javascript">
+    var keys = {};
+    var singlePressKeys = {};
+    var inputData = {
+      keys: [],
+      'left-stick': {x: 0, y: 0},
+      'right-stick': {x: 0, y: 0}
+    };
+
+    var buttons = [
+      'face-0', 'face-1', 'face-2', 'face-3', 'face-4', 'face-5', 'up', 'down',
+      'left', 'right'
+    ];
+
+    function position (touch) {
+      var radius = (touch.target.scrollWidth / 2);
+
+      var x = touch.clientX - touch.target.offsetLeft - radius;
+      var y = touch.clientY - touch.target.offsetTop - radius;
+
+      if (x > radius) {
+        x = radius;
+      }
+      if (x < -radius) {
+        x = -radius;
+      }
+      if (y > radius) {
+        y = radius;
+      }
+      if (y < -radius) {
+        y = -radius;
+      }
+
+      return {
+        x: Math.abs(x) <= radius ? x : x < 0 ? -radius : radius,
+        y: Math.abs(y) <= radius ? y : y < 0 ? -radius : radius
+      };
+    }
+
+    function updateStick (element, x, y) {
+      $(element).css('background-image', '-webkit-radial-gradient(' + x + 'px ' + y + 'px, circle cover, yellow, orange, red)');
+    }
+
+    function omni (touch, element) {
+      var radius = (touch.target.scrollWidth / 2);
+
+      var pos = position(touch);
+
+      var px = pos.x + radius;
+      var py = pos.y + radius;
+
+      updateStick(element, px, py);
+    }
+
+    function directional (touch, deadzone, element) {
+      var radius = (touch.target.scrollWidth / 2);
+
+      var pos = position(touch);
+      pos.x /= radius;
+      pos.y /= radius;
+
+      pos.x *= deadzone.x;
+      pos.y *= deadzone.y;
+
+      var px = (pos.x * radius) + radius;
+      var py = (pos.y * radius) + radius;
+
+      updateStick(element, px, py);
+    }
+
+    function snappy (touch, element, points) {
+      var radius = (touch.target.scrollWidth / 2);
+
+      var pos = position(touch);
+      pos.x /= radius;
+      pos.y /= radius;
+
+      var angle = Math.atan2(pos.y, pos.x);
+      var mag = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
+
+      var PiOver4 = Math.PI / points;
+      var newAngle = PiOver4 * Math.round(angle / PiOver4);
+
+      pos.x = Math.cos(newAngle) * mag;
+      pos.y = Math.sin(newAngle) * mag;
+
+      var px = (pos.x * radius) + radius;
+      var py = (pos.y * radius) + radius;
+
+      updateStick(element, px, py);
+    }
+
+    function way8 (touch, element) {
+      return snappy(touch, element, 4);
+    }
+
+    function way4 (touch, element) {
+      return snappy(touch, element, 2);
+    }
+
+    $('#left-stick').on('touchstart touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          omni(touch, '#left-stick');
+        }
+      });
+    });
+
+    $('#8-way').on('touchstart touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          way8(touch, '#8-way');
+        }
+      });
+    });
+
+    $('#4-way').on('touchstart touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          way4(touch, '#4-way');
+        }
+      });
+    });
+
+    $('#2-way-v').on('touchstart touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          directional(touch, {x: 0, y: 1}, '#2-way-v');
+        }
+      });
+    });
+
+    $('#2-way-h').on('touchstart touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          directional(touch, {x: 1, y: 0}, '#2-way-h');
+        }
+      });
+    });
+
+    function pressButton (receiver, button) {
+      $(receiver)
+        .addClass('inverse-' + button)
+        .removeClass('base-' + button);
+      keys[button] = {key: button};
+      singlePressKeys[button] = {key: button};
+    }
+
+    function releaseButton (button) {
+      $('#' + button)
+        .addClass('base-' + button)
+        .removeClass('inverse-' + button);
+      keys[button] = false;
+      singlePressKeys[button] = false;
+    }
+
+    $('.overlay').on('touchmove', function (e) {
+      _.each(e.originalEvent.touches, function (touch) {
+        var receiver = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        _.each(buttons, function (button) {
+          if (_.isEqual($(receiver).attr('id'), button)) {
+            pressButton(receiver, button);
+
+            e.stopPropagation();
+            e.preventDefault();
+          } else {
+            releaseButton(button);
+          }
+        });
+      });
+    });
+
+    $('.overlay').on('touchend touchleave touchcancel', function (e) {
+      _.each(e.originalEvent.changedTouches, function (touch) {
+        var receiver = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        _.each(buttons, function (button) {
+          if (_.isEqual($(receiver).attr('id'), button)) {
+            releaseButton(button);
+
+            e.stopPropagation();
+            e.preventDefault();
+          }
+        });
+      });
+    });
+
+
+
+
+    $('#left-stick').on('touchend touchleave touchcancel', function () {
+      $(this).css('background-image', '');
+      return false;
+    });
+    $('#8-way').on('touchend touchleave touchcancel', function () {
+      $(this).css('background-image', '');
+      return false;
+    });
+    $('#4-way').on('touchend touchleave touchcancel', function () {
+      $(this).css('background-image', '');
+      return false;
+    });
+    $('#2-way-v').on('touchend touchleave touchcancel', function () {
+      $(this).css('background-image', '');
+      return false;
+    });
+    $('#2-way-h').on('touchend touchleave touchcancel', function () {
+      $(this).css('background-image', '');
+      return false;
+    });
+
+    _.each(buttons, function (button) {
+      $('#' + button).on('touchstart touchmove', function (e) {
+        _.each(e.originalEvent.touches, function (touch) {
+          if (_.isEqual($(touch.target).attr('id'), $(e.target).attr('id'))) {
+            pressButton(touch.target, button);
+          }
+        });
+      });
+
+      $('#' + button).on('touchend touchleave touchcancel', function () {
+        return releaseButton(button);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    body {
+      display: flex;
+      flex-flow: row wrap;
+    }
+    div {
+      margin: 0 2em;
+      padding: 0;
+      flex: 0 1 20%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="none"></div>
+  <div id="axial"></div>
+  <div id="scaledAxial"></div>
+  <div id="radial"></div>
+
+  <div id="radial2"></div>
+  <div id="scaledRadial"></div>
+  <div id="w8"></div>
+  <div id="w4"></div>
+
+  <div id="wv"></div>
+  <div id="wh"></div>
+
+</body>
+<script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
+<script src="bower_components/c3/c3.min.js"></script>
+<script src="bower_components/moment/moment.js"></script>
+<script src="bower_components/lodash/lodash.min.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/aws-sdk/dist/aws-sdk.min.js"></script>
+<script>
+  var deadzone = 0.25;
+  var step = 0.05;
+
+  function getAxial (coord) {
+    var mag = Math.sqrt(coord * coord);
+
+    if (mag <= deadzone) {
+      return 0;
+    }
+
+    if (mag > 1) {
+      return (coord < 0) ? -1 : 1;
+    }
+
+    return (coord < 0) ? -mag : mag;
+  }
+
+  function getScaledAxial (coord) {
+    var mag = Math.sqrt(coord * coord);
+
+    if (mag <= deadzone) {
+      return 0;
+    }
+
+    if (mag > 1) {
+      return (coord < 0) ? -1 : 1;
+    }
+
+    mag = (mag - deadzone) / (1 - deadzone);
+
+    return (coord < 0) ? -mag : mag;
+  }
+
+  function getRadial (coord) {
+    var mag = Math.sqrt(coord.x * coord.x + coord.y * coord.y);
+
+    if (mag <= deadzone) {
+      return {x: 0, y: 0};
+    }
+
+    return coord;
+  }
+
+   function getRadial2 (coord) {
+    var angle = Math.atan2(coord.y, coord.x);
+    var mag = Math.sqrt(coord.x * coord.x + coord.y * coord.y);
+
+    if (mag <= deadzone) {
+      mag = 0;
+    }
+
+    if (mag > 1) {
+      mag = 1;
+    }
+
+    var x = mag * Math.sin(angle);
+    var y = mag * Math.cos(angle);
+
+    return { x: x, y: y };
+  }
+
+  function getScaledRadial (coord) {
+    var angle = Math.atan2(coord.y, coord.x);
+    var mag = Math.sqrt(coord.x * coord.x + coord.y * coord.y);
+
+    if (mag <= deadzone) {
+      return { x: 0, y: 0 };
+    }
+
+    if (mag > 1) {
+      mag = 1;
+    }
+
+    mag = (mag - deadzone) / (1 - deadzone);
+
+    var x = mag * Math.sin(angle);
+    var y = mag * Math.cos(angle);
+
+    return { x: x, y: y };
+  }
+
+  function snapToRadian (coord, deadzone, axes) {
+    var angle = Math.atan2(coord.y, coord.x);
+    var mag = Math.sqrt(coord.x * coord.x + coord.y * coord.y);
+    var snapRadians = Math.PI / axes;
+    var newAngle = snapRadians * Math.round(angle / snapRadians);
+
+    if (mag <= deadzone) {
+      return { x: 0, y: 0 };
+    }
+
+    if (mag > 1) {
+      mag = 1;
+    }
+
+    return {
+      x: Math.cos(newAngle) * mag,
+      y: Math.sin(newAngle) * mag
+    };
+  }
+
+  function getW8 (coord) {
+    return snapToRadian(coord, deadzone, 4);
+  }
+
+  function getW4 (coord) {
+    return snapToRadian(coord, deadzone, 2);
+  }
+
+  function getWv (coord) {
+    return {
+      x: 0,
+      y: snapToRadian(coord, deadzone, 2).y
+    };
+  }
+
+  function getWh (coord) {
+    return {
+      x: snapToRadian(coord, deadzone, 2).x,
+      y: 0
+    };
+  }
+
+  var i, j;
+
+  var noneData = { bindto: '#none', data: { columns: [], type: 'scatter' }};
+  var none = c3.generate(noneData);
+  var none_x = ['none_x'];
+  var none_y = ['none'];
+
+
+  var axialData = { bindto: '#axial', data: { columns: [], type: 'scatter' }};
+  var axial = c3.generate(axialData);
+  var axial_x = ['axial_x'];
+  var axial_y = ['axial'];
+
+
+  var scaledAxialData = { bindto: '#scaledAxial', data: { columns: [], type: 'scatter' }};
+  var scaledAxial = c3.generate(scaledAxialData);
+  var scaledAxial_x = ['scaledAxial_x'];
+  var scaledAxial_y = ['scaledAxial'];
+
+
+  var radialData = { bindto: '#radial', data: { columns: [], type: 'scatter' }};
+  var radial = c3.generate(radialData);
+  var radial_x = ['radial_x'];
+  var radial_y = ['radial'];
+
+
+  var radial2Data = { bindto: '#radial2', data: { columns: [], type: 'scatter' }};
+  var radial2 = c3.generate(radial2Data);
+  var radial2_x = ['radial2_x'];
+  var radial2_y = ['radial2'];
+
+
+  var scaledRadialData = { bindto: '#scaledRadial', data: { columns: [], type: 'scatter' }};
+  var scaledRadial = c3.generate(scaledRadialData);
+  var scaledRadial_x = ['scaledRadial_x'];
+  var scaledRadial_y = ['scaledRadial'];
+
+  var w8 = { bindto: '#w8', data: { columns: [], type: 'scatter' }};
+  var w8 = c3.generate(w8);
+  var w8_x = ['w8_x'];
+  var w8_y = ['w8'];
+
+  var w4Data = { bindto: '#w4', data: { columns: [], type: 'scatter' }};
+  var w4 = c3.generate(w4Data);
+  var w4_x = ['w4_x'];
+  var w4_y = ['w4'];
+
+  var wvData = { bindto: '#wv', data: { columns: [], type: 'scatter' }};
+  var wv = c3.generate(wvData);
+  var wv_x = ['wv_x'];
+  var wv_y = ['wv'];
+
+  var whData = { bindto: '#wh', data: { columns: [], type: 'scatter' }};
+  var wh = c3.generate(whData);
+  var wh_x = ['wh_x'];
+  var wh_y = ['wh'];
+
+  for (i = -1.0; i < 1.0; i += step) {
+    for (j = -1.0; j < 1.0; j += step) {
+      none_x.push(i);
+      none_y.push(j);
+
+      axial_x.push(getAxial(i));
+      axial_y.push(getAxial(j));
+
+      scaledAxial_x.push(getScaledAxial(i));
+      scaledAxial_y.push(getScaledAxial(j));
+
+      radial_x.push(getRadial({x: i, y: j}).x);
+      radial_y.push(getRadial({x: i, y: j}).y);
+
+      radial2_x.push(getRadial2({x: i, y: j}).x);
+      radial2_y.push(getRadial2({x: i, y: j}).y);
+
+      scaledRadial_x.push(getScaledRadial({x: i, y: j}).x);
+      scaledRadial_y.push(getScaledRadial({x: i, y: j}).y);
+
+      w8_x.push(getW8({x: i, y: j}).x);
+      w8_y.push(getW8({x: i, y: j}).y);
+      w4_x.push(getW4({x: i, y: j}).x);
+      w4_y.push(getW4({x: i, y: j}).y);
+      wv_x.push(getWv({x: i, y: j}).x);
+      wv_y.push(getWv({x: i, y: j}).y);
+      wh_x.push(getWh({x: i, y: j}).x);
+      wh_y.push(getWh({x: i, y: j}).y);
+    }
+  }
+
+  wh_x.push(1.0);
+  wh_y.push(1.0);
+
+  wh_x.push(-1.0);
+  wh_y.push(-1.0);
+
+  none.load({columns: [none_x, none_y], xs: { none: 'none_x', }});
+  axial.load({columns: [axial_x, axial_y], xs: { axial: 'axial_x', }});
+  scaledAxial.load({columns: [scaledAxial_x, scaledAxial_y], xs: { scaledAxial: 'scaledAxial_x', }});
+  radial.load({columns: [radial_x, radial_y], xs: { radial: 'radial_x', }});
+  radial2.load({columns: [radial2_x, radial2_y], xs: { radial2: 'radial2_x', }});
+  scaledRadial.load({columns: [scaledRadial_x, scaledRadial_y], xs: { scaledRadial: 'scaledRadial_x', }});
+  w8.load({columns: [w8_x, w8_y], xs: { w8: 'w8_x', }});
+  w4.load({columns: [w4_x, w4_y], xs: { w4: 'w4_x', }});
+  wv.load({columns: [wv_x, wv_y], xs: { wv: 'wv_x', }});
+  wh.load({columns: [wh_x, wh_y], xs: { wh: 'wh_x', }});
+</script>
+</html>
